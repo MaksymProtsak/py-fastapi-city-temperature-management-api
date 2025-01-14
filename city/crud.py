@@ -18,6 +18,13 @@ async def get_city_by_name(db, city_name: str):
     return result.scalars().first()
 
 
+async def get_city(db, city_id: int):
+    result = await db.execute(
+        select(models.DBCity).where(models.DBCity.id == city_id)
+    )
+    return result.scalars().first()
+
+
 async def create_city(db: AsyncSession, city):
     try:
         db_city = models.DBCity(
