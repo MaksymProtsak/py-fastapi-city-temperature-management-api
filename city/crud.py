@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
-from . import models
+from . import models, schemas
 
 
 async def get_all_cities(db):
@@ -37,4 +37,20 @@ async def create_city(db: AsyncSession, city):
         return db_city
     except IntegrityError as e:
         await db.rollback()
-        raise HTTPException(status_code=400, detail="City already exists.") from e
+        raise HTTPException(
+            status_code=400,
+            detail="City already exists."
+        ) from e
+
+
+async def update_city(
+        db,
+        db_city: models.DBCity,
+        city: schemas.City
+) -> models.DBCity:
+    for key, value in city.dict().items():
+        if getattr(db_city, key) != value:
+            setattr(db_city, key, value)
+    await db.commit()
+    await db.refresh(db_city)
+    return db_city
