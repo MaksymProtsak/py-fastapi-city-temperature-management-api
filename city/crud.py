@@ -54,3 +54,9 @@ async def update_city(
     await db.commit()
     await db.refresh(db_city)
     return db_city
+
+
+async def delete_city(db: AsyncSession, db_city: models.DBCity):
+    await db.delete(db_city)
+    await db.commit()
+    return db_city
