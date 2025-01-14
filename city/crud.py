@@ -1,4 +1,7 @@
 from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
 
 from . import models
 
@@ -6,3 +9,25 @@ from . import models
 async def get_all_cities(db):
     result = await db.execute(select(models.DBCity))
     return result.scalars().all()
+
+
+async def get_city_by_name(db, city_name: str):
+    result = await db.execute(
+        select(models.DBCity).where(models.DBCity.name == city_name)
+    )
+    return result.scalars().first()
+
+
+async def create_city(db: AsyncSession, city):
+    try:
+        db_city = models.DBCity(
+            name=city.name,
+            additional_info=city.additional_info
+        )
+        db.add(db_city)
+        await db.commit()
+        await db.refresh(db_city)
+        return db_city
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="City already exists.") from e
