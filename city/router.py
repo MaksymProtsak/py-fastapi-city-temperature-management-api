@@ -49,3 +49,11 @@ async def update_single_city(
         raise HTTPException(status_code=404, detail="City not found")
 
     return await crud.update_city(db=db, db_city=db_city, city=city)
+
+
+@router.delete("/cities/{city_id}/", response_model=schemas.City)
+async def delete_city(city_id: int, db: AsyncSession = Depends(get_db)):
+    db_city = await crud.get_city(db=db, city_id=city_id)
+    if db_city is None:
+        raise HTTPException(status_code=404, detail="City not found")
+    return await crud.delete_city(db=db, db_city=db_city,)
