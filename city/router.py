@@ -25,3 +25,13 @@ async def create_city(city: schemas.CityCreate, db: Session = Depends(get_db)):
         )
 
     return await crud.create_city(db=db, city=city)
+
+
+@router.get("/cities/{city_id}", response_model=schemas.City)
+async def read_city(city_id: int, db: Session = Depends(get_db)):
+    db_city = await crud.get_city(db=db, city_id=city_id)
+
+    if db_city is None:
+        raise HTTPException(status_code=404, detail="City not found")
+
+    return db_city
