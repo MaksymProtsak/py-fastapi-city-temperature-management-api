@@ -26,21 +26,14 @@ async def get_city(db, city_id: int):
 
 
 async def create_city(db: AsyncSession, city):
-    try:
-        db_city = models.DBCity(
-            name=city.name,
-            additional_info=city.additional_info
-        )
-        db.add(db_city)
-        await db.commit()
-        await db.refresh(db_city)
-        return db_city
-    except IntegrityError as e:
-        await db.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail="City already exists."
-        ) from e
+    db_city = models.DBCity(
+        name=city.name,
+        additional_info=city.additional_info
+    )
+    db.add(db_city)
+    await db.commit()
+    await db.refresh(db_city)
+    return db_city
 
 
 async def update_city(
