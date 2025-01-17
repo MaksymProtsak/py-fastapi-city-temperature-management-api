@@ -21,13 +21,22 @@ from city.crud import (
 
 router = APIRouter()
 
+API_KEY = "bff8d32b314b46069b7210605251501"
+
 
 @router.get(
     "/temperatures/",
     response_model=list[schemas.Temperature]
 )
-async def read_temperatures(db: Session = Depends(get_db)):
-    return await crud.get_all_temperatures(db=db)
+async def read_temperatures(db: Session = Depends(get_db), city_id: int = None):
+    city = await get_city(db, city_id)
+
+    if city is None:
+        raise HTTPException(
+            status_code=400, detail="City not exist"
+        )
+
+    return await crud.get_all_temperatures(db=db, city_id=city_id)
 
 
 @router.post("/temperatures/", response_model=schemas.Temperature)
@@ -58,11 +67,10 @@ async def create_temperature(
 
 @router.post("/temperatures/update/", response_model=list[schemas.Temperature])
 async def update_temperature(db: Session = Depends(get_db)):
-    api_key = "bff8d32b314b46069b7210605251501"
     cities_temperature = {}
     cities = await get_all_cities(db=db)
     urls = [
-        f"https://api.weatherapi.com/v1/current.json?key={api_key}&q={city.name}"
+        f"https://api.weatherapi.com/v1/current.json?key={API_KEY}&q={city.name}"
         for city in cities
     ]
 
