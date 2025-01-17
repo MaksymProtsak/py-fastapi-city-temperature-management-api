@@ -1,8 +1,9 @@
+from datetime import datetime
+
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
-from fastapi import HTTPException
 
+from temperature.crud import get_temperature_by_city_id, get_all_temperatures
 from . import models, schemas
 
 
@@ -47,6 +48,19 @@ async def update_city(
     await db.commit()
     await db.refresh(db_city)
     return db_city
+
+
+async def update_cities_temperature(db, cities: dict) -> None:
+    for city, temp_c in cities.items():
+        db_city = await get_city_by_name(db, city)
+        db_temperature = await get_temperature_by_city_id(
+            db,
+            db_city.id
+        )
+
+        setattr(db_temperature, "temperature", temp_c)
+        setattr(db_temperature, "date_time", datetime.now())
+    await db.commit()
 
 
 async def delete_city(db: AsyncSession, db_city: models.DBCity):
