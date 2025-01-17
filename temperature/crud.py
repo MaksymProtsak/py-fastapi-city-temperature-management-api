@@ -1,10 +1,14 @@
 from sqlalchemy.future import select
 
 from . import models, schemas
+from .models import DBTemperature
 
 
-async def get_all_temperatures(db):
-    result = await db.execute(select(models.DBTemperature))
+async def get_all_temperatures(db, city_id: int = None):
+    query = select(DBTemperature)
+    if city_id is not None:
+        query = query.where(DBTemperature.city_id == city_id)
+    result = await db.execute(query)
     return result.scalars().all()
 
 
